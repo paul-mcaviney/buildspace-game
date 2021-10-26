@@ -26,10 +26,6 @@ const main = async () => {
     await txn.wait();
     console.log("Minted NFT #3");
 
-    txn = await gameContract.mintCharacterNFT(3);
-    await txn.wait();
-    console.log("Minted NFT #4");
-
     console.log("Done deploying and minting NFTs");
 
     // get the value of the NFT's URI

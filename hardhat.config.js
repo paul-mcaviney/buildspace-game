@@ -1,4 +1,5 @@
 require("@nomiclabs/hardhat-waffle");
+require('dotenv').config();
 
 /**
  * @type import('hardhat/config').HardhatUserConfig
@@ -8,7 +9,7 @@ module.exports = {
   networks: {
       rinkeby: {
           url: process.env.ALCHEMY_URL,
-          accounts: [process.env.PRIVATE_KEY],
+          accounts: [process.env.RINKEBY_KEY],
       },
   },
 };
