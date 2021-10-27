@@ -34,6 +34,17 @@ contract BlockchainGame is ERC721 {
     // map an NFTs attributes to the tokenID
     mapping(uint256 => CharacterAttributes) public nftHolderAttributes;
 
+    // struct for the boss of the game
+    struct BigBoss {
+        string name;
+        string imageURI;
+        uint hp;
+        uint maxHp;
+        uint attackDamage;
+    }
+
+    BigBoss public bigBoss;
+
     // map NFT tokenId to an address - keeps track of who owns what
     mapping(address => uint256) public nftHolders;
 
@@ -42,10 +53,26 @@ contract BlockchainGame is ERC721 {
         string[] memory characterNames,
         string[] memory characterImageURIs,
         uint[] memory characterHp,
-        uint[] memory characterAttackDamage
+        uint[] memory characterAttackDamage,
+        string memory bossName,
+        string memory bossImageURI,
+        uint bossHp,
+        uint bossAttackDamage
     ) 
         ERC721("Heroes", "Hero")
+
     {
+        // Initialize the boss and save to bigBoss state variable
+        bigBoss = BigBoss({
+            name: bossName,
+            imageURI: bossImageURI,
+            hp: bossHp,
+            maxHp: bossHp,
+            attackDamage: bossAttackDamage
+        });
+
+        console.log("Done initializing boss %s, HP %s, img %s", bigBoss.name, bigBoss.hp, bigBoss.imageURI);
+   
         // Loop through all characters, save their values in the contract to be used later when minting NFTs
         for (uint i = 0; i < characterNames.length; i++) {
             defaultCharacters.push(CharacterAttributes({
@@ -64,6 +91,7 @@ contract BlockchainGame is ERC721 {
         // Incremetn tokenIds so first NFT has an ID of 1
         _tokenIds.increment();
     }
+
 
     // mint an NFT based on the character selected
     function mintCharacterNFT(uint _characterIndex) external {
@@ -90,6 +118,7 @@ contract BlockchainGame is ERC721 {
         // Increment tokenId for next minting
         _tokenIds.increment();
     }
+
 
     function tokenURI(uint256 _tokenId) public view override returns (string memory) {
         CharacterAttributes memory characterAttributes = nftHolderAttributes[_tokenId];
@@ -120,5 +149,45 @@ contract BlockchainGame is ERC721 {
         );
 
         return output;
+    }
+
+
+    // Function for attacking the boss
+    function attackBoss() public {
+        // Get the state of the player's NFT
+        uint256 nftTokenIdOfPlayer = nftHolders[msg.sender];
+        CharacterAttributes storage player = nftHolderAttributes[nftTokenIdOfPlayer];
+
+        console.log("\nPlayer w/ character %s about to attack. Has %s HP and %s AD", player.name, player.hp, player.attackDamage);
+        console.log("Boss %s has %s HP and %s AD", bigBoss.name, bigBoss.hp, bigBoss.attackDamage);
+
+        // Make sure the player has more than 0 HP
+        require (
+            player.hp > 0,
+            "Error: character must have HP to attack the boss"
+        );
+
+        // Make sure the boss has more than 0 HP
+        require (
+            bigBoss.hp > 0,
+            "Error: boss must have HP in order to attack the boss"
+        );
+        
+        // Allow player to attack the boss
+        if ( bigBoss.hp < player.attackDamage) {
+            bigBoss.hp = 0;
+        } else {
+            bigBoss.hp -= player.attackDamage;
+        }
+
+        // Allow the boss to attack the player
+        if (player.hp < bigBoss.attackDamage) {
+            player.hp = 0;
+        } else {
+            player.hp -= bigBoss.attackDamage;
+        }
+
+        // Log results
+        console.log("Boss attacked player. New player HP: %s\n", player.hp);
     }
 }

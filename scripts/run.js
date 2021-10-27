@@ -9,12 +9,23 @@ const main = async () => {
     ],
     [1000, 600, 750],                       // Hp Values
     [1000, 1400, 1250],                     // Attack Damage
+    "Cell",                                 // Boss Name 
+    "https://i.imgur.com/e7eMUwQ.jpg",      // Boss Image
+    20000,                                  // Boss hp
+    100                                     // Boss Attack Damage
     );
     await gameContract.deployed();
     console.log("Contract deployed to:", gameContract.address);
 
+
     // mint an nft character
     let txn = await gameContract.mintCharacterNFT(1);
+    await txn.wait();
+
+    txn = await gameContract.attackBoss();
+    await txn.wait();
+
+    txn = await gameContract.attackBoss();
     await txn.wait();
 
     // get the value of the NFT's URI
