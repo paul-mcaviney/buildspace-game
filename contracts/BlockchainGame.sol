@@ -48,6 +48,10 @@ contract BlockchainGame is ERC721 {
     // map NFT tokenId to an address - keeps track of who owns what
     mapping(address => uint256) public nftHolders;
 
+    // Events
+    event CharacterNFTMinted(address sender, uint256 tokenId, uint256 characterIndex);
+    event AttackComplete(uint newBossHp, uint newPlayerHp);
+
     // Data passed in ti the contract when first initialized - creating the characters
     constructor(
         string[] memory characterNames,
@@ -117,6 +121,8 @@ contract BlockchainGame is ERC721 {
 
         // Increment tokenId for next minting
         _tokenIds.increment();
+
+        emit CharacterNFTMinted(msg.sender, newItemId, _characterIndex);
     }
 
 
@@ -189,5 +195,34 @@ contract BlockchainGame is ERC721 {
 
         // Log results
         console.log("Boss attacked player. New player HP: %s\n", player.hp);
+
+        emit AttackComplete(bigBoss.hp, player.hp);
+    }
+
+
+    // Check if user has an NFT and if so get it's attributes
+    function checkIfUserHasNFT() public view returns (CharacterAttributes memory) {
+        // Get the tokenId of the user's character NFT
+        uint256 userNftTokenId = nftHolders[msg.sender];
+
+        // If the user has a token Id in the map, return their character, else return empty character
+        if (userNftTokenId > 0) {
+            return nftHolderAttributes[userNftTokenId];
+        } else {
+            CharacterAttributes memory emptyStruct;
+            return emptyStruct;
+        }
+    }
+
+
+    // get Default Characters for character selection
+    function getAllDefaultCharacters() public view returns (CharacterAttributes[] memory) {
+        return defaultCharacters;
+    }
+
+
+    // Get The Boss and it's attributes
+    function getBigBoss() public view returns (BigBoss memory) {
+        return bigBoss;
     }
 }
